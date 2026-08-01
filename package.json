@@ -1,0 +1,8 @@
+{
+  "name": "bot-bedrock",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "bedrock-protocol": "^1.26.0"
+  }
+}
