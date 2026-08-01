@@ -1,54 +1,37 @@
 const bedrock = require('bedrock-protocol');
 const http = require('http');
 
+// Servidor mínimo só para o Render manter o bot ligado
 const PORT = process.env.PORT || 3000;
 http.createServer((req, res) => res.end('OK')).listen(PORT);
 
-let bot = null;
+function conectar() {
+  console.log("Bot iniciado!");
 
-function iniciarBot() {
-  console.log("Tentando conectar ao Aternos...");
+  const client = bedrock.createClient({
+    host: 'JasonMomoa3126.aternos.me',
+    port: 14729,
+    username: '24hrsSERVER',
+    offline: true
+  });
 
-  try {
-    bot = bedrock.createClient({
-      host: 'JasonMomoa3126.aternos.me',
-      port: 14729,
-      username: '24hrsSERVER',
-      offline: true,
-      skipPing: true,
-      version: '1.26.36.1' // <--- COLOQUE A VERSÃO EXATA DO SEU ATERNOS AQUI!
-    });
+  client.on('text', (packet) => {
+    console.log(`[Chat] ${packet.source_name}: ${packet.message}`);
+  });
 
-    bot.on('spawn', () => {
-      console.log("🟢 BOT ENTROU NO SERVIDOR COM SUCESSO!");
-    });
+  // Se for desconectado, aguarda 5 segundos e tenta de novo
+  client.on('close', () => {
+    console.log("Desconectado! Tentando reconectar em 5 segundos...");
+    setTimeout(conectar, 5000);
+  });
 
-    bot.on('text', (packet) => {
-      console.log(`[CHAT] ${packet.source_name || 'Servidor'}: ${packet.message}`);
-    });
-
-    bot.on('error', (err) => {
-      console.log("Erro no bot:", err.message);
-      reconnect();
-    });
-
-    bot.on('close', () => {
-      console.log("Desconectado. Reconectando em 5s...");
-      reconnect();
-    });
-
-  } catch (e) {
-    console.log("Erro:", e.message);
-    reconnect();
-  }
+  // Se der erro na conexão, aguarda 5 segundos e tenta de novo
+  client.on('error', (err) => {
+    console.log("Erro na conexão! Tentando reconectar em 5 segundos...");
+    try { client.close(); } catch (e) {}
+    setTimeout(conectar, 5000);
+  });
 }
 
-function reconnect() {
-  if (bot) {
-    try { bot.close(); } catch(e) {}
-    bot = null;
-  }
-  setTimeout(iniciarBot, 5000);
-}
-
-iniciarBot();
+// Inicia a primeira conexão
+conectar();
