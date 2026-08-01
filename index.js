@@ -1,45 +1,57 @@
 const bedrock = require('bedrock-protocol');
 const http = require('http');
 
-// Servidor HTTP para o Render ficar ativo
+// Servidor de fachada pro Render ficar Live sem fechar
 const PORT = process.env.PORT || 3000;
-http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Bot em execução\n');
-}).listen(PORT);
+http.createServer((req, res) => res.end('OK')).listen(PORT);
 
-function conectarBot() {
-  console.log("Tentando conectar o bot...");
+let bot = null;
 
-  const client = bedrock.createClient({
-    host: 'JasonMomoa3126.aternos.me',
-    port: 14729,
-    username: '24hrsSERVER',
-    offline: true,
-    skipPing: true // Pula o ping inicial que o Aternos bloqueia!
-  });
+function iniciarBot() {
+  console.log("Tentando conectar ao Aternos...");
 
-  client.on('join', () => {
-    console.log("🟢 SUCESSO: Bot entrou no servidor!!");
-  });
+  try {
+    bot = bedrock.createClient({
+      host: 'JasonMomoa3126.aternos.me',
+      port: 14729,
+      username: '24hrsSERVER',
+      offline: true,
+      skipPing: true,
+      concurrency: 1,
+      connectTimeout: 90000,
+      compressionThreshold: 0
+    });
 
-  client.on('text', (packet) => {
-    console.log(`[Chat] ${packet.source_name}: ${packet.message}`);
-  });
+    bot.on('spawn', () => {
+      console.log("🟢 BOT ENTROU NO SERVIDOR COM SUCESSO!");
+    });
 
-  client.on('close', () => {
-    console.log("Desconectado. Tentando reconectar em 5 segundos...");
-    setTimeout(conectarBot, 5000);
-  });
+    bot.on('text', (packet) => {
+      console.log(`[CHAT] ${packet.source_name || 'Servidor'}: ${packet.message}`);
+    });
 
-  client.on('error', (err) => {
-    console.log("Erro na conexão:", err.message || err);
-    try {
-      client.close();
-    } catch (e) {}
-    setTimeout(conectarBot, 5000);
-  });
+    bot.on('error', (err) => {
+      console.log("Aguardando servidor/reconectando:", err.message);
+      reconnect();
+    });
+
+    bot.on('close', () => {
+      console.log("Conexão fechada. Reconectando em 5s...");
+      reconnect();
+    });
+
+  } catch (e) {
+    console.log("Erro de inicialização:", e.message);
+    reconnect();
+  }
 }
 
-console.log("Bot iniciado!");
-conectarBot();
+function reconnect() {
+  if (bot) {
+    try { bot.close(); } catch(e) {}
+    bot = null;
+  }
+  setTimeout(iniciarBot, 5000);
+}
+
+iniciarBot();
