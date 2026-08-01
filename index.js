@@ -1,7 +1,6 @@
 const bedrock = require('bedrock-protocol');
 const http = require('http');
 
-// Servidor de fachada pro Render ficar Live sem fechar
 const PORT = process.env.PORT || 3000;
 http.createServer((req, res) => res.end('OK')).listen(PORT);
 
@@ -17,9 +16,7 @@ function iniciarBot() {
       username: '24hrsSERVER',
       offline: true,
       skipPing: true,
-      concurrency: 1,
-      connectTimeout: 90000,
-      compressionThreshold: 0
+      version: '1.26.36.1' // <--- COLOQUE A VERSÃO EXATA DO SEU ATERNOS AQUI!
     });
 
     bot.on('spawn', () => {
@@ -31,17 +28,17 @@ function iniciarBot() {
     });
 
     bot.on('error', (err) => {
-      console.log("Aguardando servidor/reconectando:", err.message);
+      console.log("Erro no bot:", err.message);
       reconnect();
     });
 
     bot.on('close', () => {
-      console.log("Conexão fechada. Reconectando em 5s...");
+      console.log("Desconectado. Reconectando em 5s...");
       reconnect();
     });
 
   } catch (e) {
-    console.log("Erro de inicialização:", e.message);
+    console.log("Erro:", e.message);
     reconnect();
   }
 }
