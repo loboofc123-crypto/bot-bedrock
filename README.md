@@ -1,0 +1,2 @@
+# bot-bedrock
+bot ;-;
