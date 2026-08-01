@@ -1,4 +1,14 @@
 const bedrock = require('bedrock-protocol');
+const http = require('http');
+
+// Servidor de fachada para o Render não fechar a aplicação
+const PORT = process.env.PORT || 3000;
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Bot Minecraft rodando!\n');
+}).listen(PORT, () => {
+  console.log(`Servidor HTTP de manter vivo rodando na porta ${PORT}`);
+});
 
 function conectarBot() {
   console.log("Tentando conectar o bot...");
@@ -6,7 +16,7 @@ function conectarBot() {
   const client = bedrock.createClient({
     host: 'JasonMomoa3126.aternos.me',
     port: 14729,
-    username: 'Jorge_oBOT',
+    username: '24hrsSERVER',
     offline: true
   });
 
@@ -23,15 +33,15 @@ function conectarBot() {
     setTimeout(conectarBot, 5000);
   });
 
-  // Trata os erros de timeout sem fechar o processo do Node.js
   client.on('error', (err) => {
-    console.log("Servidor offline ou inacessível:", err.message || err);
-    // Fecha a conexão do cliente atual para poder abrir uma nova limpa
+    console.log("Servidor offline ou inacessivel:", err.message || err);
     try {
       client.close();
     } catch (e) {}
+    // Tenta de novo em 5 segundos
+    setTimeout(conectarBot, 5000);
   });
 }
 
-// Inicia a primeira conexão
+// Inicia o bot
 conectarBot();
