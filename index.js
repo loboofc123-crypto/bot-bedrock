@@ -20,7 +20,7 @@ function conectarBot() {
   });
 
   client.on('join', () => {
-    console.log("🟢 SUCESSO: Bot entrou no servidor!");
+    console.log("🟢 SUCESSO: Bot entrou no servidor!!");
   });
 
   client.on('text', (packet) => {
