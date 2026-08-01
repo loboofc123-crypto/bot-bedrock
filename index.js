@@ -1,14 +1,12 @@
 const bedrock = require('bedrock-protocol');
 const http = require('http');
 
-// Servidor de fachada para o Render não fechar a aplicação
+// Servidor de fachada para o Render não derrubar a aplicação
 const PORT = process.env.PORT || 3000;
 http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Bot Minecraft rodando!\n');
-}).listen(PORT, () => {
-  console.log(`Servidor HTTP de manter vivo rodando na porta ${PORT}`);
-});
+  res.end('Bot em execução\n');
+}).listen(PORT);
 
 function conectarBot() {
   console.log("Tentando conectar o bot...");
@@ -28,20 +26,22 @@ function conectarBot() {
     console.log(`[Chat] ${packet.source_name}: ${packet.message}`);
   });
 
+  // Se for desconectado, tenta reconectar em 5 segundos
   client.on('close', () => {
-    console.log("Desconectado do servidor. Tentando reconectar em 5 segundos...");
+    console.log("Desconectado. Tentando reconectar em 5 segundos...");
     setTimeout(conectarBot, 5000);
   });
 
+  // Se der erro de conexão, aguarda 5 segundos e tenta de novo
   client.on('error', (err) => {
-    console.log("Servidor offline ou inacessivel:", err.message || err);
+    console.log("Erro na conexão:", err.message || err);
     try {
       client.close();
     } catch (e) {}
-    // Tenta de novo em 5 segundos
     setTimeout(conectarBot, 5000);
   });
 }
 
 // Inicia o bot
+console.log("Bot iniciado!");
 conectarBot();
