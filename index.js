@@ -13,24 +13,29 @@ app.listen(PORT, () => {
     console.log(`Servidor HTTP rodando na porta ${PORT}`);
 });
 
-// --- Evita que a aplicação caia por erros não tratados ---
+// --- Prevenção de Crashes ---
 process.on('uncaughtException', (err) => {
-    console.error('Erro não tratado capturado:', err.message);
+    console.error('Erro não tratado:', err.message);
 });
 
 process.on('unhandledRejection', (reason) => {
-    console.error('Rejeição não tratada capturada:', reason);
+    console.error('Rejeição não tratada:', reason);
 });
 
-// --- Conexão do Bot com Reconexão Automática ---
+// --- Conexão Direta (Sem Ping UDP) ---
 function startBot() {
-    console.log("Tentando conectar ao servidor Minecraft...");
+    console.log("Conectando ao servidor Aternos...");
 
     const client = bedrock.createClient({
         host: 'JasonMomoa3126.aternos.me',
         port: 14729,
         username: '24hrsSERVER',
-        offline: true
+        offline: true,
+        skipPing: true // Ignores O PING UDP QUE DAVA TIMEOUT NO RENDER!
+    });
+
+    client.on('join', () => {
+        console.log('✅ Bot entrou com sucesso no servidor!');
     });
 
     client.on('text', (packet) => {
@@ -41,9 +46,9 @@ function startBot() {
         console.error('Erro no cliente:', err.message);
     });
 
-    client.on('end', () => {
-        console.log('Bot desconectado. Tentando reconectar em 30 segundos...');
-        setTimeout(startBot, 30000);
+    client.on('end', (reason) => {
+        console.log(`Bot desconectado (${reason}). Tentando reconectar em 15 segundos...`);
+        setTimeout(startBot, 15000);
     });
 }
 
